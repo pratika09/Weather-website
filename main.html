@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <div class="nav">
+        <a href="main.html">Home</a>
+        <a href="adminLogin.html">Admin Login</a> 
+    </div>
+    
+    <div class="card">
+        <div class="search">
+            <input type="text" placeholder="Enter a City Name" spellcheck="false" id="city-input">
+            <button id="search-btn"><img src="https://cdn1.iconfinder.com/data/icons/ionicons-sharp-vol-2/512/search-sharp-1024.png" alt="Search"></button>
+        </div>
+        <div class="error">
+            <p>Error: Invalid City Name</p>
+        </div>
+        
+        <div class="weather">
+            <div class="date"><h2 id="time"></h2></div>
+            <img src="https://cdn2.iconfinder.com/data/icons/weather-flat-14/64/weather07-1024.png" class="weather-icon" alt="Weather img">
+            <h1 class="temp">0°c</h1>
+            <h2 class="city">PHP ERROR</h2>
+            <div class="details">
+                <div class="col">
+                    <img src="https://cdn0.iconfinder.com/data/icons/weather-371/64/humidity-rain-weather-drops-atmospheric-1024.png" alt="Humidity img" >
+                    <div>
+                        <p class="humidity">0%</p>
+                        <p>Humidity</p>
+                    </div>
+                </div>
+                <div class="col">
+                    <img src="https://cdn3.iconfinder.com/data/icons/weather-free-2/32/Weather_Free_Outline_weather-wind-breeze-1024.png" alt="Wind img" >
+                    <div>
+                        <p class="wind">0 m/sec</p>
+                        <p>Wind Speed</p>
+                    </div>
+                </div>
+                <div class="col">
+                    <img src="https://cdn0.iconfinder.com/data/icons/colorix-weather-and-climate/128/weather_climate_meteorology-05-1024.png" alt="pressure img">
+                    <div>
+                        <p class="pressure">0 hPa</p>
+                        <p>Pressure</p>
+                    </div>
+                </div>
+            </div>
+            <div class="seemore">
+                <button id="see-more-btn">See more</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const defaultCity = "Kathmandu";
+        const apiKey = "9633306c8594e498ff6e92d5186586fa";
+        const apiUrl = "retrieveData.php?city=";
+
+        const searchBox = document.getElementById("city-input");
+        const searchBtn = document.getElementById("search-btn");
+        const seeMoreBtn = document.getElementById("see-more-btn");
+        const weatherIcon = document.querySelector(".weather-icon");
+
+        async function checkWeather(city) {
+            const response = await fetch(apiUrl + city);
+
+            if (response.status == 404) {
+                document.querySelector(".error").style.display = "block";
+                document.querySelector(".weather").style.display = "none";
+            } else {
+                var data = await response.json();
+                console.log(data);
+
+                document.querySelector(".city").innerHTML = data.city;
+                document.querySelector(".temp").innerHTML = Math.round(data.temperature) + "°c";
+                document.querySelector(".humidity").innerHTML = data.humidity + "%";
+                document.querySelector(".pressure").innerHTML = data.pressure + " hPa";
+                document.querySelector(".wind").innerHTML = data.wind + " m/sec";
+
+                let today = new Date(data._date);
+                let date = today.getDate();
+                let month = today.toLocaleDateString([], { month: 'short' });
+                let year = today.getFullYear();
+                let day = today.toLocaleDateString([], { weekday: 'long' });
+                let f = day + " | " + month + ' ' + date + ", " + year;
+                document.getElementById("time").innerHTML = f;
+
+                if (data._description.includes("cloud")) {
+                    weatherIcon.src = "https://cdn2.iconfinder.com/data/icons/flat-pack-1/64/Cloud-512.png";
+                } else if (data._description.includes("clear")) {
+                    weatherIcon.src = "https://cdn1.iconfinder.com/data/icons/weather-forecast-meteorology-color-1/128/weather-sunny-512.png";
+                } else if (data._description.includes("rain")) {
+                    weatherIcon.src = "https://cdn2.iconfinder.com/data/icons/weather-flat-14/64/weather07-1024.png";
+                } else if (data._description.includes("drizzle")) {
+                    weatherIcon.src = "https://cdn1.iconfinder.com/data/icons/weather-118/48/Showers_Sunny-512.png";
+                } else if (data._description.includes("mist")) {
+                    weatherIcon.src = "https://cdn4.iconfinder.com/data/icons/the-weather-is-nice-today/64/weather_39-1024.png";
+                } else if (data._description.includes("haze")) {
+                    weatherIcon.src = "https://cdn1.iconfinder.com/data/icons/weather-471/128/HAZE-1024.png";
+                }
+
+                document.querySelector(".weather").style.display = "block";
+                document.querySelector(".error").style.display = "none";
+            }
+        }
+
+        searchBtn.addEventListener("click", () => {
+            const city = searchBox.value;
+            checkWeather(city);
+            if (city) {
+                seeMoreBtn.innerHTML = `<a href="seeMore.html?city=${encodeURIComponent(city)}">See more</a>`;
+            }
+        });
+
+        checkWeather(defaultCity);
+        seeMoreBtn.innerHTML = `<a href="seeMore.html?city=${encodeURIComponent(defaultCity)}">See more</a>`;
+    </script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>See More</title>
+    <link rel="stylesheet" href="seeMore.css">
+</head>
+<body>
+    <div class="card">
+        <h1 id="topp"></h1>
+        <div class="container" id="forecastContainer">
+            <!-- Weather items will be dynamically inserted here -->
+        </div>
+        <div class="back">
+            <button><a href="main.html">Back</a></button>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = 'b1b15e88fa797225412429c1c50c122a1';
+        const getQueryParam = (param) => {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        };
+
+        const city = getQueryParam('city') || 'Kathmandu';
+
+        const weatherIcons = {
+            'clear': 'https://cdn1.iconfinder.com/data/icons/weather-forecast-meteorology-color-1/128/weather-sunny-512.png',
+            'clouds': 'https://cdn2.iconfinder.com/data/icons/flat-pack-1/64/Cloud-512.png',
+            'rain': 'https://cdn2.iconfinder.com/data/icons/weather-flat-14/64/weather07-1024.png',
+            'drizzle': 'https://cdn1.iconfinder.com/data/icons/weather-118/48/Showers_Sunny-512.png',
+            'mist': 'https://cdn4.iconfinder.com/data/icons/the-weather-is-nice-today/64/weather_39-1024.png',
+            'haze': 'https://cdn1.iconfinder.com/data/icons/weather-471/128/HAZE-1024.png',
+            'snow' : 'http://openweathermap.org/img/wn/13d@2x.png'
+        };
+        
+        const fetchWeeklyForecast = async () => {
+            try {
+                const response = await fetch(`retrieveWeeklyData.php?city=${encodeURIComponent(city)}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                const forecastContainer = document.getElementById('forecastContainer');
+                forecastContainer.innerHTML = data.list.map(day => {
+                    const date = new Date(day.dt * 1000);
+                    const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+                    const temp = (day.temp.day-273).toFixed(1);
+                    const weather = day.weather[0].main.toLowerCase();
+                    const humidity=day.humidity;
+                    const wind = day.speed;
+                    const iconUrl = weatherIcons[weather] || 'https://cdn2.iconfinder.com/data/icons/flat-pack-1/64/Cloud-512.png';
+                    console.log(day);
+                    
+                    return `
+                    <div class="item">
+                        <p class="day">${dayName}</p>
+                        <img class="icon" src="${iconUrl}" alt="${weather}">
+                        <p class="temp">${temp}°C</p>
+                        <p class="humidity">RH: ${humidity}%</p>
+                        <p class="wind">W: ${wind} m/s</p>
+                        <p class="pressure">P: ${day.pressure} hPa</p>
+                        </div>
+                        `;
+                }).join('');
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                const forecastContainer = document.getElementById('forecastContainer');
+                forecastContainer.innerHTML = `<p>Error fetching forecast data: ${error.message}</p>`;
+            }
+        };
+        document.getElementById('topp').innerText = `Weekly Forecast in ${city.toUpperCase()}`;
+        fetchWeeklyForecast();
+        </script>
+</body>
+</html>
